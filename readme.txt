@@ -78,7 +78,7 @@ The R.W. Elephant Inventory Gallery uses templates for the layout of the gallery
 
 Templates are located in the `/wp-content/plugins/rwe-gallery/templates/` directory. In this directory you will find sub-directories named for each template style. The individual template files are located in each sub-directory. Some parts of templates are shared. The shared templates located in the `common` template directory.
 
-New wishlist placeholdersin version 1.1: If you are using custom templates or if you have modified existing templates, be sure to back them up before upgrading to version 1.1. The new templates contain wishlist placeholders for the wishlist function. There are three new placeholders: [add_to_wishlist] availble only on the item detail page, [view_wishlist] and [wishlist] available on all pages. View the templates included in version 1.1 for example positions. You can add these placeholders to your modified templates to add wishlist functionality. You may also wish to copy the new wishlist styling from the CSS file.
+New wishlist placeholders in version 1.1: If you are using custom templates or if you have modified existing templates, be sure to back them up before upgrading to version 1.1. The new templates contain wishlist placeholders for the wishlist function. There are three new placeholders: [add_to_wishlist] availble only on the item detail page, [view_wishlist] and [wishlist] available on all pages. View the templates included in version 1.1 for example positions. You can add these placeholders to your modified templates to add wishlist functionality. You may also wish to copy the new wishlist styling from the CSS file.
 
 Following is a list of templates and the placeholders available for each:
 
