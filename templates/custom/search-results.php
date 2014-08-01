@@ -2,6 +2,8 @@
 
 	<h3><a href="[gallery_url]">[gallery_name]</a> : [search_terms]</h3>
 
+	<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
 	[search_form]
 
 	[error]

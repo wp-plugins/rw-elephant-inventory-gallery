@@ -25,8 +25,8 @@ input.rwe-submit {
 	clear: both;
 	margin: 20px 0 0;
 }
-input#api_key, input#title_format {
-	width: 250px;
+input#api_key, input#title_format, input#wishlist_message {
+	width: 300px;
 }
 small.rwe-note {
 	margin-left: 5px;

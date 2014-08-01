@@ -2,6 +2,8 @@
 
 	<h3>[gallery_name]</h3>
 
+	<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
 	[search_form]
 
 	[error]

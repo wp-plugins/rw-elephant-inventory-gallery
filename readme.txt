@@ -2,8 +2,8 @@
 Contributors: jpsteinwand
 Tags: rental, inventory, gallery
 Requires at least: 3.0
-Tested up to: 3.5.1
-Stable tag: 1.0
+Tested up to: 3.9.1
+Stable tag: 1.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,8 +57,17 @@ See the special section 'Customizing Templates' in the readme.txt file.
 
 == Changelog ==
 
+= 1.1 =
+* Added a wishlist which allows visitors to add items from inventory and submit their contact information.
+
 = 1.0 =
 * This is the first release of the R.W. Elephant Inventory Gallery
+
+
+== Upgrade Notice ==
+
+= 1.1 =
+New wishlist feature. Note: If you customized your templates, back them up before upgrading! Upgrading will overwrite templates! See Customizing Templates in readme.txt for details.
 
 
 == Customizing Templates ==
@@ -68,6 +77,8 @@ The gallery is displayed on the chosen WordPress page by inserting it into the c
 The R.W. Elephant Inventory Gallery uses templates for the layout of the gallery. You can modify the provided templates. A template named `custom` with minimal styling is provided if you wish to use it build your own template design. The gallery templates use placeholders which are be replaced with the appropriate gallery information when the pages are displayed on your website.
 
 Templates are located in the `/wp-content/plugins/rwe-gallery/templates/` directory. In this directory you will find sub-directories named for each template style. The individual template files are located in each sub-directory. Some parts of templates are shared. The shared templates located in the `common` template directory.
+
+New wishlist placeholdersin version 1.1: If you are using custom templates or if you have modified existing templates, be sure to back them up before upgrading to version 1.1. The new templates contain wishlist placeholders for the wishlist function. There are three new placeholders: [add_to_wishlist] availble only on the item detail page, [view_wishlist] and [wishlist] available on all pages. View the templates included in version 1.1 for example positions. You can add these placeholders to your modified templates to add wishlist functionality. You may also wish to copy the new wishlist styling from the CSS file.
 
 Following is a list of templates and the placeholders available for each:
 
@@ -122,6 +133,8 @@ This template displays the main categories. It is the home page of your gallery.
 [category_list] = this is the list of categories, created by the template `common/category-list.php`
 [category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
 [error] = displays error message on the page, if there is an error
+[view_wishlist] = view wishlist button
+[wishlist] = wishlist status messages and contents
 
 
 * category.php
@@ -136,6 +149,8 @@ Lists the items in a selected category.
 [category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the category)
+[view_wishlist] = view wishlist button
+[wishlist] = wishlist status messages and contents
 
 
 * item-detail.php
@@ -150,16 +165,19 @@ An individual item page.
 [item_quantity] = quantity
 [item_category_name] = the name of the item's category
 [item_category_url] = the URL of the item's category
-[item_photo] = main photo, in <img> tag
+[item_photo] = main photo, in img tag
 [item_photo_url] = the URL to the main photo
-[item_thumbnails] = the alternate images, each <img> is inside <li><a> tags and linked to its corresponding large image.
+[item_thumbnails] = the alternate images, each img is inside li a tags and linked to its corresponding large image.
 [item_thumbnails_url] = a comma separated list of URL for the alternate images
-[item_tags] = a list of tags for the item, inside <li> element and linked to the corresponding tag page
+[item_tags] = a list of tags for the item, inside li element and linked to the corresponding tag page
 [item_dimensions] = dimensions of the item in format X x Y x Z
 [item_price] = the price of the item
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the item)
 [social_links] = a div containing the sharing links enabled via plugin settings.
+[add_to_wishlist] = Add to wishlist button
+[view_wishlist] = view wishlist button
+[wishlist] = wishlist status messages and contents
 
 
 * search-results.php
@@ -174,6 +192,8 @@ A list of search results.
 [category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the search results)
+[view_wishlist] = view wishlist button
+[wishlist] = wishlist status messages and contents
 
 
 * tag.php
@@ -188,6 +208,8 @@ List of items for a tag.
 [category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the tag)
+[view_wishlist] = view wishlist button
+[wishlist] = wishlist status messages and contents
 
 
 * style.css
