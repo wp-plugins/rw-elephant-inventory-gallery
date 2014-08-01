@@ -4,6 +4,8 @@
 
 		<ul class="rwe-breadcrumb"><li><a href="[gallery_url]">[gallery_name]</a></li><li><a href="[item_category_url]">[item_category_name]</a></li><li>[item_name]</li></ul>
 
+		<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
 		[search_form]
 
 		<div style="clear:both;"></div>
@@ -40,6 +42,10 @@
 		<ul class="rwe-item-tags">
 			[item_tags]
 		</ul>
+
+		[add_to_wishlist]
+
+		[wishlist_notice]
 
 	</div>
 

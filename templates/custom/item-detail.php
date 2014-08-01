@@ -2,6 +2,8 @@
 
 	<h3><a href="[gallery_url]">[gallery_name]</a> : <a href="[item_category_url]">[item_category_name]</a> : [item_name]</h3>
 
+	<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
 	[search_form]
 
 	[social_links]
@@ -35,6 +37,10 @@
 		</ul>
 
 	</p>
+
+	[add_to_wishlist]
+
+	[wishlist_notice]
 
 
 </div>	

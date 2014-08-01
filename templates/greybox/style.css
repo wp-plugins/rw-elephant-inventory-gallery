@@ -144,3 +144,47 @@ input#rwe-search {
 #rwe-gallery ul.rwe-gallery-thumbnails li:last-child a {
 	margin-right: 0;
 }
+#view-wishlist {
+	position: relative;
+	float: right;
+	margin: 10px;
+}
+#wishlist {
+	position: absolute;
+	right: 0;
+	top: 45px;
+	width: 300px;
+	padding: 10px;
+	background-color: #eee;
+	border: 1px solid #ccc;
+}
+#wishlist .item {
+	width: 50px;
+}
+#wishlist #update-wishlist {
+	margin: 10px 10px 10px 0;
+	float: left;
+}
+#wishlist .submit-wishlist {
+	margin: 10px 0 10px 10px;
+	float: right;
+}
+#wishlistsubmit label {
+	float: left;
+	width: 200px;
+	padding: 3px 10px;
+	margin: 3px;
+}
+#wishlistsubmit input#event_date {
+	width: 120px;
+}
+#wishlistsubmit p.error label {
+	background-color: #f77;
+}
+#wishlistsubmit p.error input {
+	background-color: #ff7;
+}
+.add-to-wishlist:disabled {
+	opacity: 0.5;
+	filter: alpha(opacity=50);
+}

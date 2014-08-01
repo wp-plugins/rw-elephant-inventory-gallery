@@ -4,6 +4,8 @@
 
 		<ul class="rwe-breadcrumb"><li><a href="[gallery_url]">[gallery_name]</a></li><li>&#183;</li><li>[tag_name]</li></ul>
 
+		<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
 		[search_form]
 
 		<div style="clear:both;"></div>
