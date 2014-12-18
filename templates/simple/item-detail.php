@@ -20,7 +20,7 @@
 
 		<div class="rwe-photo-container">[item_photo]</div>
 
-		<ul class="rwe-gallery-thumbnails">[item_thumbnails]</ul>
+		<ul class="rwe-gallery-thumbnails rwe-size-[item_thumbnail_size]">[item_thumbnails]</ul>
 
 	</div>
 

@@ -2,8 +2,8 @@
 Contributors: jpsteinwand
 Tags: rental, inventory, gallery
 Requires at least: 3.0
-Tested up to: 3.9.1
-Stable tag: 1.1
+Tested up to: 4.0.1
+Stable tag: 1.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -57,6 +57,15 @@ See the special section 'Customizing Templates' in the readme.txt file.
 
 == Changelog ==
 
+= 1.2 =
+* Changed location for custom templates to /wp-content/rw-elephant-templates/
+* Added SEO-friendly URL option for items and categories
+* Added 300 pixel thumbnail option
+* Changed large image size on item detail pages to 600 pixels (previously used whatever original size was in R.W. Elephant)
+* Large image on item details page links to the original image
+* Updated item detail templates to include thumbnail size (new placeholder [item_thumbnail_size])
+* Updated wishlist submit to accomodate servers that use PHP caching
+
 = 1.1 =
 * Added a wishlist which allows visitors to add items from inventory and submit their contact information.
 
@@ -66,19 +75,23 @@ See the special section 'Customizing Templates' in the readme.txt file.
 
 == Upgrade Notice ==
 
-= 1.1 =
-New wishlist feature. Note: If you customized your templates, back them up before upgrading! Upgrading will overwrite templates! See Customizing Templates in readme.txt for details.
+= 1.2 =
+IMPORTANT: If you customized your templates, back them up before upgrading! Upgrading will overwrite your templates! See Customizing Templates in readme.txt for more.
 
 
 == Customizing Templates ==
 
-The gallery is displayed on the chosen WordPress page by inserting it into the content of the page. If you wish to change the appearance of the page beyond the content area, such as to change the page width or change the way the page heading is displayed, change the page template in WordPress. To select a different WordPress page template: (Pages->Edit->Select your gallery page->Template). You can modify or make a new page template for WordPress. Normally you will want to use a full width page template.
+NOTICE: If you have modified existing templates, be sure to back them up (or move them to the new location described below) before upgrading to version 1.2.
 
-The R.W. Elephant Inventory Gallery uses templates for the layout of the gallery. You can modify the provided templates. A template named `custom` with minimal styling is provided if you wish to use it build your own template design. The gallery templates use placeholders which are be replaced with the appropriate gallery information when the pages are displayed on your website.
+New custom template location in version 1.2! When modifying templates, create a `rw-elephant-templates` directory under your `wp-content` directory (`/wp-content/rw-elephant-templates/`). Then place modified templates in this location (you may copy from `/wp-content/plugins/rw-elephant-inventory-gallery/templates/custom/` or any of the included templates). Only copy the template files you wish to modify; if a template does not exist in the rw-elephant-templates directory, the default will be used. Moving the template location outside the plugin directory will prevent future updates from overwriting your templates.
 
-Templates are located in the `/wp-content/plugins/rwe-gallery/templates/` directory. In this directory you will find sub-directories named for each template style. The individual template files are located in each sub-directory. Some parts of templates are shared. The shared templates located in the `common` template directory.
+The gallery is displayed on the chosen WordPress page by inserting it into the content of the page. If you wish to change the appearance of the page beyond the content area, such as to change the page width or change the way the page heading is displayed, change the page template in your WordPress theme. To select a different WordPress page template (if your Theme supports multiple page layouts): Pages->Edit->[Select your gallery page]->Template. You can modify or make a new page template by editing your WordPress theme. Normally you will want to use a full width page template.
 
-New wishlist placeholders in version 1.1: If you are using custom templates or if you have modified existing templates, be sure to back them up before upgrading to version 1.1. The new templates contain wishlist placeholders for the wishlist function. There are three new placeholders: [add_to_wishlist] availble only on the item detail page, [view_wishlist] and [wishlist] available on all pages. View the templates included in version 1.1 for example positions. You can add these placeholders to your modified templates to add wishlist functionality. You may also wish to copy the new wishlist styling from the CSS file.
+The R.W. Elephant Inventory Gallery uses its own templates for the layout of the gallery pages. You can modify the provided templates. A template named `custom` with minimal styling is provided if you wish to use it to build your own template design. The gallery templates use placeholders which are be replaced with the appropriate gallery information when the pages are displayed on your website.
+
+The included templates are located in the `/wp-content/plugins/rwe-gallery/templates/` directory. In this directory you will find sub-directories named for each template style. The individual template files are located in each sub-directory. Some parts of templates are shared. The shared templates located in the `common` template directory. Do not modify the templates in this location, instead place modified templates in `/wp-content/rw-elephant-templates/` as described above.
+
+Wishlist templates: the included templates have added wishlist placeholders for the wishlist function as of version 1.1. There are three new placeholders: [add_to_wishlist] availble only on the item detail page, [view_wishlist] and [wishlist] available on all pages. View the templates included in version 1.1 for example positions. You can add these placeholders to your modified templates to add wishlist functionality. You will probably also want to copy the new wishlist styling from the CSS file.
 
 Following is a list of templates and the placeholders available for each:
 
@@ -131,7 +144,7 @@ This template displays the main categories. It is the home page of your gallery.
 [gallery_url] = the URL of the main gallery page
 [search_form] = displays the search form
 [category_list] = this is the list of categories, created by the template `common/category-list.php`
-[category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
+[category_thumbnail_size] = the size of category thumbnail in pixels: 100, 200 or 300
 [error] = displays error message on the page, if there is an error
 [view_wishlist] = view wishlist button
 [wishlist] = wishlist status messages and contents
@@ -146,7 +159,7 @@ Lists the items in a selected category.
 [search_form] = displays the search form
 [category_name] = the name of the category
 [category_items] = the list of items, created by the template `common/item-list.php'
-[category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
+[category_thumbnail_size] = the size of category thumbnail in pixels: 100, 200 or 300
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the category)
 [view_wishlist] = view wishlist button
@@ -169,6 +182,7 @@ An individual item page.
 [item_photo_url] = the URL to the main photo
 [item_thumbnails] = the alternate images, each img is inside li a tags and linked to its corresponding large image.
 [item_thumbnails_url] = a comma separated list of URL for the alternate images
+[item_thumbnail_size] = the size of category thumbnail in pixels: 100, 200 or 300
 [item_tags] = a list of tags for the item, inside li element and linked to the corresponding tag page
 [item_dimensions] = dimensions of the item in format X x Y x Z
 [item_price] = the price of the item
@@ -189,7 +203,7 @@ A list of search results.
 [search_form] = displays the search form
 [search_terms] = the search term(s) for these search results
 [search_items] = a list of items that match the search, created by the template `common/item-list.php'
-[category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
+[category_thumbnail_size] = the size of category thumbnail in pixels: 100, 200 or 300
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the search results)
 [view_wishlist] = view wishlist button
@@ -205,7 +219,7 @@ List of items for a tag.
 [search_form] = displays the search form
 [tag_name] = the name of the tag
 [tag_items] = a list of items for this tag, created by the template `common/item-list.php'
-[category_thumbnail_size] = the size of category thumbnail in pixels, either 100 or 200
+[category_thumbnail_size] = the size of category thumbnail in pixels: 100, 200 or 300
 [error] = displays error message on the page, if there is an error
 [page_url] = the URL of the current page (the tag)
 [view_wishlist] = view wishlist button

@@ -1,10 +1,16 @@
 <div id="rwe-gallery">
 
-	<h3><a href="[gallery_url]">[gallery_name]</a> : <a href="[item_category_url]">[item_category_name]</a> : [item_name]</h3>
+	<div class="rwe-top-box">
 
-	<div id="view-wishlist">[view_wishlist][wishlist]</div>
+		<ul class="rwe-breadcrumb"><li><a href="[gallery_url]">[gallery_name]</a></li><li><a href="[item_category_url]">[item_category_name]</a></li><li>[item_name]</li></ul>
 
-	[search_form]
+		<div id="view-wishlist">[view_wishlist][wishlist]</div>
+
+		[search_form]
+
+		<div style="clear:both;"></div>
+
+	</div>
 
 	[social_links]
 
@@ -12,35 +18,37 @@
 
 	<div class="rwe-item-images">
 
-		[item_photo]
+		<div class="rwe-photo-container">[item_photo]</div>
 
 		<ul class="rwe-gallery-thumbnails">[item_thumbnails]</ul>
 
 	</div>
 
-	<p>
-		[item_description]
-	</p>
+	<div class="rwe-sidebox">
 
-	<p>
-		Quantity: [item_quantity]
-	</p>
+		<div class="rwe-description">
+	
+			<p>
+				[item_description]
+			</p>
+			<p>
+				Quantity: [item_quantity]
+			</p>
+			<p>
+				Dimensions: [item_dimensions]
+			</p>
+		</div>
 
-	<p>
-		Dimensions: [item_dimensions]
-	</p>
-
-	<p>
-		Tags:
 		<ul class="rwe-item-tags">
 			[item_tags]
 		</ul>
 
-	</p>
+		[add_to_wishlist]
 
-	[add_to_wishlist]
+		[wishlist_notice]
 
-	[wishlist_notice]
+	</div>
 
+	<div style="clear:both;"></div>
 
 </div>	

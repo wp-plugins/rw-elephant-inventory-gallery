@@ -16,7 +16,7 @@
 
 	[error]
 
-	<div class="rwe-item-images">
+	<div class="rwe-item-images rwe-size-[item_thumbnail_size]">
 
 		<div class="rwe-photo-container">[item_photo]</div>
 
