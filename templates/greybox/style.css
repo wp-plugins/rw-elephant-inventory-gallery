@@ -130,10 +130,6 @@ input#rwe-search {
 	padding: 5px 10px;
 	margin: 5px 10px 5px 0;
 }
-#rwe-gallery ul.rwe-gallery-thumbnails li img {
-	width: 50px;
-	padding: 5px;
-}
 #rwe-gallery ul.rwe-gallery-thumbnails li a {
 	padding: 4px;
 	margin: 5px 9px 5px 0;

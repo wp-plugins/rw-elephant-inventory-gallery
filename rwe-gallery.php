@@ -3,7 +3,7 @@
 Plugin Name: R.W. Elephant Inventory Gallery
 Plugin URI: http://www.rwelephant.com/
 Description: Gallery displays R.W. Elephant rental inventory on your website.
-Version: 1.1
+Version: 1.2
 Author: R.W. Elephant
 Author URI: http://www.rwelephant.com/
 License: GPL2 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -41,7 +41,8 @@ class RWEgallery {
 			'title_format' => "[title] [separator] [gallery_name] [separator] ",
 			'enable_wishlist' => 'yes',
 			'wishlist_prices' => 'no',
-			'wishlist_message' => 'Complete the following form to submit your wishlist.'
+			'wishlist_message' => 'Complete the following form to submit your wishlist.',
+			'seo_urls' => 'no'
 		);
 
 		// Read stored options from options table
@@ -69,6 +70,7 @@ class RWEgallery {
 			rwe_set_data('enable_wishlist',$options['enable_wishlist']);
 			rwe_set_data('wishlist_prices',$options['wishlist_prices']);
 			rwe_set_data('wishlist_prices',$options['page_id']);
+			rwe_set_data('seo_urls',$options['seo_urls']);
 
 			// Define API calls
 
@@ -84,35 +86,41 @@ class RWEgallery {
 			$item_tags_url = $api_base . 'action=list_tags_for_item&inventory_item_id=';
 			$submit_wishlist_url = $wishlist_api . 'action=finalize_wishlist';
 
-			// Register the style sheet for chosen template
-
-			wp_register_style( 'rwe-stylesheet', plugins_url('templates/'.$options['template'].'/style.css', __FILE__) );
-
 			// Templates
 
-			//   Main gallery page listing categories, and sub template for the category list
-			$categories_template_file = plugin_dir_path(__FILE__) . 'templates/' . $options['template'] . '/categories.php';
+			$custom_template_directory = 'rw-elephant-templates';
 
-			//   Pages with lists of items: category, tag, or search
-			$category_template_file = plugin_dir_path(__FILE__) . 'templates/'. $options['template'] .'/category.php';
-			$tag_template_file = plugin_dir_path(__FILE__) . 'templates/'. $options['template'] .'/tag.php';
-			$search_results_template_file =  plugin_dir_path(__FILE__) . 'templates/'. $options['template'] .'/search-results.php';
 
-			//   Item detail page
-			$item_detail_template_file = plugin_dir_path(__FILE__) . 'templates/'. $options['template'] .'/item-detail.php';
+			// check wp-content location if not already defined
+			if ( ! defined( 'WP_CONTENT_DIR' ) )
+				define( 'WP_CONTENT_DIR', ABSPATH . 'wp-content' );
+
+			rwe_set_data('content_dir', WP_CONTENT_DIR );
+			rwe_set_data('custom_template_directory', $custom_template_directory );
+
+
+			$custom_template = WP_CONTENT_DIR . '/' . $custom_template_directory . '/';
+			$standard_template = plugin_dir_path(__FILE__) . 'templates/' . $options['template'] . '/' ;
+			$common_template = plugin_dir_path(__FILE__) . 'templates/common/' ;
+
+			// Register the style sheet for chosen template
+
+			$rwe_stylesheet_location = (file_exists($custom_template.'style.css'))? content_url( $custom_template_directory ). '/style.css' : plugins_url('templates/'.$options['template'].'/style.css', __FILE__);
+			wp_register_style( 'rwe-stylesheet', $rwe_stylesheet_location );
+
 
 			//   Sub-templates used for lists of items and categories
-			$category_list_template_file = plugin_dir_path(__FILE__) . 'templates/common/category-list.php';
-			$item_list_template_file = plugin_dir_path(__FILE__) . 'templates/common/item-list.php';
 
-			//   The search form
-			$search_form_template_file = plugin_dir_path(__FILE__) . 'templates/common/search-form.php';
+			$category_list_template_file = (file_exists($custom_template.'category-list.php'))? $custom_template . 'category-list.php' : $common_template . 'category-list.php';
+			$item_list_template_file = (file_exists($custom_template.'item-list.php'))? $custom_template . 'item-list.php' : $common_template . 'item-list.php';
+
 
 			//   Wishlist
 			if (rwe_get_data('enable_wishlist')=='yes') {
 
 				// Wishlist template
-				$wishlist_template_file = plugin_dir_path(__FILE__) . 'templates/common/wishlist.php';
+
+				$wishlist_template_file = (file_exists($custom_template.'wishlist.php'))? $custom_template . 'wishlist.php' : $common_template . 'wishlist.php';
 				$wishlist_template = file_get_contents($wishlist_template_file);
 
 				// Wishlist messaging
@@ -125,6 +133,8 @@ class RWEgallery {
 
 			// Parse search form and wishlist for use in other templates
 
+			$search_form_template_file = (file_exists($custom_template.'search-form.php'))? $custom_template . 'search-form.php' : $common_template . 'search-form.php';
+
 			$search_form_template = file_get_contents($search_form_template_file);
 			$search_form_placeholders = array(
 				'[gallery_name]' => $options['gallery_name'],
@@ -134,8 +144,11 @@ class RWEgallery {
 
 			// Images
 
-			rwe_set_data('no-thumbnail-image', plugin_dir_url(__FILE__) . 'images/no-thumbnail-image.png');
-			rwe_set_data('no-item-image', plugin_dir_url(__FILE__) . 'images/no-item-image.png');
+			$no_thumbnail_image = (file_exists($custom_template.'no-thumbnail-image.png'))? content_url( $custom_template_directory ). '/no-thumbnail-image.png' : plugin_dir_url(__FILE__) . 'images/no-thumbnail-image.png';
+			$no_item_image = (file_exists($custom_template.'no-item-image.png'))? content_url( $custom_template_directory ). '/no-item-image.png' : plugin_dir_url(__FILE__) . 'images/no-item-image.png';
+
+			rwe_set_data('no-thumbnail-image', $no_thumbnail_image );
+			rwe_set_data('no-item-image', $no_item_image );
 
 			// Request var names mapped to permalink names
 
@@ -154,7 +167,8 @@ class RWEgallery {
 				$url = explode('/',$rwegallery_request_url);
 				$i = 0;
 				while( $i < count($url) ) {
-					$page_request[$url[$i]] = intval($url[$i+1]);
+					// strip off seo friendly urls
+					$page_request[$url[$i]] = intval(end(explode('-',$url[$i+1])));
 					$i+=2;
 				}
 			}
@@ -238,7 +252,7 @@ class RWEgallery {
 				
 						$item_list_placeholders = array(
 							'[item_name]' => $item['name'],
-							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id']),
+							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id'],htmlspecialchars_decode($item['name'])),
 							'[item_quantity]' => $item['quantity'],
 							'[item_price]' => $item['rental_price'],
 							'[item_dimensions]' => $item['dimensions'],
@@ -257,6 +271,8 @@ class RWEgallery {
 
 					$error = '<p class="error">Nothing found.</p>';
 				}
+
+				$search_results_template_file = (file_exists($custom_template.'search-results.php'))? $custom_template . 'search-results.php' : $standard_template . 'search-results.php';
 
 				$search_results_template = file_get_contents( $search_results_template_file );
 
@@ -292,6 +308,7 @@ class RWEgallery {
 				$rwe_sid = $_COOKIE['rwe_sid'];
 
 				$wishlist_id = htmlspecialchars(stripslashes($_REQUEST['rwewishlist']));
+				$form_rwe_sid = htmlspecialchars(stripslashes($_REQUEST['rwesid']));
 				$first_name = htmlspecialchars(stripslashes($_REQUEST['first_name']));
 				$last_name =  htmlspecialchars(stripslashes($_REQUEST['last_name']));
 				$email_address =  htmlspecialchars(stripslashes($_REQUEST['email_address']));
@@ -346,7 +363,7 @@ class RWEgallery {
 					// submit to wishlist api
 
 					$wishlist_submit_string = $submit_wishlist_url . '&wishlist_id=' . $wishlist_id
-							. '&sid=' . urlencode($rwe_sid)
+							. '&sid=' . urlencode($form_rwe_sid)
 							. '&first_name=' . urlencode($first_name)
 							. '&last_name=' . urlencode($last_name)
 							. '&email_address=' . urlencode($email_address)
@@ -396,6 +413,7 @@ class RWEgallery {
 	$wishlist_message
 	<form id="wishlistsubmit" method="post">
 		<input type="hidden" id="rwewishlist" name="rwewishlist" value="$cartid"/>
+		<input type="hidden" id="rwesid" name="rwesid" value="$rwe_sid"/>
 		<p class="$error_firstname"><label for="first_name">First name</label><input name="first_name" type="text" value="$first_name" /></p>
 		<p class="$error_lastname"><label for="last_name">Last name</label><input name="last_name" type="text" value="$last_name" /></p>
 		<p class="$error_email"><label for="email_address">Email address</label><input name="email_address" type="text" value="$email_address" /></p>
@@ -407,7 +425,22 @@ jQuery(document).ready(function() {
         dateFormat : 'mm-dd-yy',
         minDate: 0
     });
+    var rwe_sid = getCookie('rwe_sid');
+    var cartid = getCookie('cartid');
+    jQuery('#rwewishlist').val(cartid);
+    jQuery('#rwesid').val(rwe_sid);
 });
+function getCookie(cname)
+{
+var name = cname + "=";
+var ca = document.cookie.split(';');
+for(var i=0; i<ca.length; i++) 
+  {
+  var c = ca[i].trim();
+  if (c.indexOf(name)==0) return c.substring(name.length,c.length);
+}
+return "";
+}
 </script>
 		<p><input type="submit" value="Submit" /></p>
 	</form>
@@ -452,7 +485,7 @@ EOF;
 				
 						$category_list_placeholders = array(
 							'[category_name]' => $category['inventory_type_name'],
-							'[category_url]' => RWEgallery::rwe_link('category',$category['inventory_type_id']),
+							'[category_url]' => RWEgallery::rwe_link('category',$category['inventory_type_id'],htmlspecialchars_decode($category['inventory_type_name'])),
 							'[category_thumbnail]' => $category['images']['photo'],
 							'[category_thumbnail_url]' => $category['images']['photo_url']
 						);
@@ -468,6 +501,9 @@ EOF;
 					$error = '<p class="error">No categories found.</p>';
 				}
 
+
+	
+				$categories_template_file = (file_exists($custom_template.'categories.php'))? $custom_template . 'categories.php' : $standard_template . 'categories.php';
 
 				$categories_template = file_get_contents( $categories_template_file );
 
@@ -528,7 +564,7 @@ EOF;
 				
 						$item_list_placeholders = array(
 							'[item_name]' => $item['name'],
-							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id']),
+							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id'], htmlspecialchars_decode($item['name'])),
 							'[item_quantity]' => $item['quantity'],
 							'[item_price]' => $item['rental_price'],
 							'[item_dimensions]' => $item['dimensions'],
@@ -549,9 +585,11 @@ EOF;
 
 				}
 
+				$tag_template_file = (file_exists($custom_template.'tag.php'))? $custom_template . 'tag.php' : $standard_template . 'tag.php';
+
 				$tag_template = file_get_contents( $tag_template_file );
 
-				$tag_url = RWEgallery::rwe_link('tag',$tag_id);
+				$tag_url = RWEgallery::rwe_link('tag',$tag_id,htmlspecialchars_decode($tag_name));
 
 				$tag_placeholders = array(
 					'[gallery_name]' => $options['gallery_name'],
@@ -610,7 +648,7 @@ EOF;
 				
 						$item_list_placeholders = array(
 							'[item_name]' => $item['name'],
-							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id']),
+							'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id'],htmlspecialchars_decode($item['name'])),
 							'[item_quantity]' => $item['quantity'],
 							'[item_price]' => $item['rental_price'],
 							'[item_dimensions]' => $item['dimensions'],
@@ -631,9 +669,11 @@ EOF;
 
 				}
 
+				$category_template_file = (file_exists($custom_template.'category.php'))? $custom_template . 'category.php' : $standard_template . 'category.php';
+
 				$category_template = file_get_contents( $category_template_file );
 
-				$category_url = RWEgallery::rwe_link('category',$category_id);
+				$category_url = RWEgallery::rwe_link('category',$category_id,htmlspecialchars_decode($category_name));
 
 				$category_placeholders = array(
 					'[gallery_name]' => $options['gallery_name'],
@@ -661,8 +701,6 @@ EOF;
 
 				$item_detail_result = RWEgallery::rwe_api($item_detail_url, $item_id);
 
-				$item_url = RWEgallery::rwe_link('item',$item_id);
-
 				if ($item_detail_result) {
 
 					$item_detail_result = $item_detail_result[0]; // result is the first item
@@ -679,6 +717,8 @@ EOF;
 						else
 							$item["$item_variable"] =  htmlspecialchars( $item_detail_result["$item_variable"] , ENT_QUOTES);
 					}
+
+					$item_url = RWEgallery::rwe_link('item',$item_id, htmlspecialchars_decode($item['name']));
 
 
 					// get tags for item
@@ -757,7 +797,10 @@ EOF;
 					//empty result or error
 
 					$error = 'Item could not be found.';
+					$item_url = RWEgallery::rwe_link('item',$item_id, 'not found');
 				}
+
+				$item_detail_template_file = (file_exists($custom_template.'item-detail.php'))? $custom_template . 'item-detail.php' : $standard_template . 'item-detail.php';
 
 				$item_detail_template = file_get_contents( $item_detail_template_file );
 
@@ -769,11 +812,12 @@ EOF;
 					'[item_description]' => $item['description'],
 					'[item_quantity]' => $item['quantity'],
 					'[item_category_name]' => $item['inventory_type_name'],
-					'[item_category_url]' => RWEgallery::rwe_link('category',$item['inventory_type_id']),
+					'[item_category_url]' => RWEgallery::rwe_link('category',$item['inventory_type_id'],htmlspecialchars_decode($item['inventory_type_name'])),
 					'[item_photo]' => $item_images['main_photo'],
 					'[item_photo_url]' => $item_images['main_photo_url'],
 					'[item_thumbnails]' => $item_images['thumbnails'],
 					'[item_thumbnails_url]' => $item_images['thumbnails_url'],
+					'[item_thumbnail_size]' => $options['item_thumbnail_size'],
 					'[item_tags]' => $item['tags'],
 					'[item_dimensions]' => $item['dimensions'],
 					'[item_price]' => $item['rental_price'],
@@ -872,7 +916,7 @@ EOF;
 	function format_item_tags($tags) {
 		if ( is_array( $tags )) {
 			foreach($tags as $tag) {
-				$tag_link = RWEgallery::rwe_link('tag',$tag['inventory_tag_type_id']);
+				$tag_link = RWEgallery::rwe_link('tag',$tag['inventory_tag_type_id'],htmlspecialchars_decode($tag['inventory_tag_name']));
 				$tag_list .= '<li><a href="'. $tag_link . '">' . $tag['inventory_tag_name'] . '</a></li>';
 			}
 			return $tag_list;
@@ -950,16 +994,27 @@ EOF;
 	}
 
 	function include_scripts() {
+
+		$custom_template_directory = rwe_get_data('custom_template_directory');
+
+		$custom_template = rwe_get_data('content_dir') . '/'. $custom_template_directory . '/';
+		$custom_template_url = content_url( $custom_template_directory );
+
+		$script_js_location = (file_exists($custom_template.'script.js'))? $custom_template_url . '/script.js' : plugins_url('templates/common/script.js', __FILE__);
+
 		wp_enqueue_script(
 			'rwe_gallery_script',
-			plugins_url('/templates/common/script.js', __FILE__),
+			$script_js_location,
 			array('jquery'),
 			'1.1'
 		);
 		if (rwe_get_data('enable_wishlist')=='yes') {
+
+			$wishlist_js_location = (file_exists($custom_template.'wishlist.js'))? $custom_template_url . '/wishlist.js' : plugins_url('templates/common/wishlist.js', __FILE__);
+
 			wp_enqueue_script(
 				'rwe_wishlist_script',
-				plugins_url('/templates/common/wishlist.js', __FILE__),
+				$wishlist_js_location,
 				array('jquery','jquery-ui-datepicker'),
 				'1.1'
 			);
@@ -969,10 +1024,22 @@ EOF;
 		wp_enqueue_style( 'rwe-stylesheet' );
 	}
 
-	function rwe_link ($type, $id) {
+	function rwe_link ($type, $id, $name) {
 		if (get_option('permalink_structure')) {
+			
+			if (rwe_get_data('seo_urls')=='yes') {
+				// add seo friendly name
+				if (!empty($name)) {
+					$seo = create_slug($name) . '-';
+				} else {
+					$seo = '';
+				}
+			} else {
+					$seo = '';
+			}
+
 			// permalink
-			return get_permalink($options['page_id'])."$type/$id/";
+			return get_permalink($options['page_id'])."$type/$seo$id/";
 		}
 		else {
 			// non-permalink direct request link
@@ -985,10 +1052,12 @@ EOF;
 
 	function process_item_in_category_image_links ($image_links, $item_name, $thumbnail_size, $rwe_id) {
 
-		if ($thumbnail_size == 100)
-			$thumb_base = '_public_thumbnail_';
-		else
+		if ($thumbnail_size == 300)
+			$thumb_base = '_300_';
+		elseif ($thumbnail_size == 200)
 			$thumb_base = '_large_thumbnail_';
+		else
+			$thumb_base = '_public_thumbnail_';
 
 		if ($image_links[0]['photo_hash']) {
 			// array item 0 contains the main image
@@ -1007,20 +1076,24 @@ EOF;
 
 		if ($image_links[0]['photo_hash']) {
 			// array item 0 contains the main image
-			$item_images['main_photo_url'] = $image_links[0]['photo_link'];
-			$item_images['main_photo'] = '<a href="'. $item_images['main_photo_url'] .'"><img src="' . $item_images['main_photo_url'] . '" class="rwe-item-photo" alt="' . $item_name . '" /></a>';
+
+			$item_images['original_photo_url'] = $image_links[0]['photo_link'];
+			$item_images['main_photo_url'] = $image_links[0]['600_link'];
+			$item_images['main_photo'] = '<a href="'. $item_images['original_photo_url'] .'"><img src="' . $item_images['main_photo_url'] . '" class="rwe-item-photo" alt="' . $item_name . '" /></a>';
 		}
 		else {
 			$item_images['main_photo_url'] = rwe_get_data('no-item-image');
 			$item_images['main_photo'] = '<img src="' . $item_images['main_photo_url'] . '" class="rwe-item-photo" alt="' . $item_name . '" />';
 		}
 
-		if ($thumbnail_size == 100)
-			$thumb_base = '_public_thumbnail_';
-		else
-			$thumb_base = '_large_thumbnail_';
 
-		$full_base = '_photo_';
+		
+		if ($thumbnail_size == 300)
+			$thumb_key = '300_link';
+		elseif ($thumbnail_size == 200)
+			$thumb_key = 'large_thumbnail_link';
+		else
+			$thumb_key = 'thumbnail_link';
 
 		$thumbnails = array();
 		$thumbnail_list = array();
@@ -1028,11 +1101,13 @@ EOF;
 		if ($image_links) {
 			foreach ( $image_links as $image ) {
 				if ( $image['photo_hash'] ) {
-					$thumbnail_url = 'http://images.rwelephant.com/' . $rwe_id . $thumb_base . $image['photo_hash'];
-					$full_image_url = 'http://images.rwelephant.com/' . $rwe_id . $full_base . $image['photo_hash'];
+					$thumbnail_url = $image[$thumb_key];
+					$full_image_url = $image['600_link'];
+					$original_image =  $image['photo_link'];
+
 
 					$thumbnails[] = $thumbnail_url;
-					$thumbnail_list[] = '<li><a href="' . $full_image_url . '"><img src="' . $thumbnail_url . '" /></a></li>';
+					$thumbnail_list[] = '<li><a href="' . $full_image_url . '" data-original="' . $original_image . '"><img src="' . $thumbnail_url . '" /></a></li>';
 				}
 			}
 		}
@@ -1135,6 +1210,18 @@ EOF;
 		add_action( 'admin_print_styles-' . $hook_suffix, 'rwe_admin_styles' );
 	}
 }
+function create_slug($phrase, $maxLength=100)
+{
+    $result = strtolower($phrase);
+
+    $result = preg_replace("/[^A-Za-z0-9\s-._\/]/", "", $result);
+    $result = preg_replace("/[\/._]+/", " ", $result);
+    $result = trim(preg_replace("/[\s-]+/", " ", $result));
+    $result = trim(substr($result, 0, $maxLength));
+    $result = preg_replace("/\s/", "-", $result);
+    
+    return $result;
+}
 function rwe_admin_init() {
 	wp_register_style( 'rwe-admin-stylesheet', plugins_url('admin.css', __FILE__) );
 }
@@ -1187,31 +1274,40 @@ function rwe_admin_options() {
 		    'desc' => '',
 		    'id'   => 'template',
 		    'type' => 'select',
-		    'options'  => array('greybox','simple','custom') ),
+		    'options'  => array('greybox','simple') ),
 		array(
 		    'name' => 'Thumbnail Size: Item List',
 		    'desc' => 'pixels. Item thumbnails on category, tag and search pages',
 		    'id'   => 'category_thumbnail_size',
 		    'type' => 'select',
-		    'options' => array(100,200) ),
+		    'options' => array(100,200,300) ),
 		array(
 		    'name' => 'Thumbnail Size: Alternate Images',
 		    'desc' => 'pixels. Alternate thumbnails on item detail pages',
 		    'id'   => 'item_thumbnail_size',
 		    'type' => 'select',
-		    'options' => array(100,200) ),
+		    'options' => array(100,200,300) ),
+		array(
+		    'name' => 'Use item and category names in URLs?',
+		    'desc' => '',
+		    'id'   => 'seo_urls',
+		    'type' => 'select',
+		    'options' => array('yes','no'),
+		    'default' => 'no' ),
 		array(
 		    'name' => 'Enable wishlist?',
 		    'desc' => '',
 		    'id'   => 'enable_wishlist',
 		    'type' => 'select',
-		    'options' => array('yes','no') ),
+		    'options' => array('yes','no'),
+		    'default' => 'yes' ),
 		array(
 		    'name' => 'Show prices in wishlist?',
 		    'desc' => '',
 		    'id'   => 'wishlist_prices',
 		    'type' => 'select',
-		    'options' => array('yes','no') ),
+		    'options' => array('yes','no'),
+		    'default' => 'no' ),
 		array(
 		    'name' => 'Wishlist Message',
 		    'desc' => 'Message to show on wishlist submit page',
@@ -1285,6 +1381,7 @@ function rwe_admin_options() {
 			foreach ( $value['options'] as $opt ) {
 				echo '<option value="' . $opt .'"';
 				if ( $options_array[ $value['id'] ] == $opt) echo ' selected="selected"';
+				elseif ( empty($options_array[ $value['id'] ]) && $value['default'] == $opt ) echo ' selected="selected"';
 				echo '>';
 				echo $opt . '</option>';
 			}
