@@ -37,6 +37,9 @@
 			<p>
 				Dimensions: [item_dimensions]
 			</p>
+
+			[formatted_price]
+
 		</div>
 
 		<ul class="rwe-item-tags">

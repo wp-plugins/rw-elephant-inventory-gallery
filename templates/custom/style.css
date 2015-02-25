@@ -157,6 +157,7 @@ input#rwe-search {
 	padding: 10px;
 	background-color: #eee;
 	border: 1px solid #ccc;
+	z-index: 1000;
 }
 #wishlist .item {
 	width: 50px;
@@ -187,4 +188,44 @@ input#rwe-search {
 .add-to-wishlist:disabled {
 	opacity: 0.5;
 	filter: alpha(opacity=50);
+}
+.view-wishlist-page ul {
+	margin: 0;
+	padding: 0;
+}
+.view-wishlist-page li {
+	margin: 0 0 1em;
+	padding: 0;
+	list-style: none;
+}
+.view-wishlist-page span {
+	display: inline-block;
+	margin: 0 1em;
+}
+.view-wishlist-page .item-name {
+	width: 250px;
+}
+.view-wishlist-page .item-price {
+	width: 100px;
+} 
+.view-wishlist-page .item.qty {
+	width: 50px;
+}
+#update-view-wishlist, .continue-shopping, .submit-wishlist {
+	margin: 10px;
+}
+.remove-from-wishlist {
+	vertical-align: middle;
+}
+.x-from-wishlist {
+	float: right;
+}
+#rwe-gallery #wishlist-contents li {
+	display: block;
+	text-align: left;
+	clear: both;
+}
+#wishlist-contents span {
+	margin: 0 0.5em;
+	display: inline-block;
 }

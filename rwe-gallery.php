@@ -3,7 +3,7 @@
 Plugin Name: R.W. Elephant Inventory Gallery
 Plugin URI: http://www.rwelephant.com/
 Description: Gallery displays R.W. Elephant rental inventory on your website.
-Version: 1.2
+Version: 1.3
 Author: R.W. Elephant
 Author URI: http://www.rwelephant.com/
 License: GPL2 - http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
@@ -33,6 +33,9 @@ class RWEgallery {
 			'gallery_name' => 'Gallery',
 			'category_thumbnail_size' => 100,
 			'item_thumbnail_size' => 100,
+			'wishlist_thumbnail_size' => 100,
+			'related_thumbnail_size' => 100,
+			'kit_thumbnail_size' => 100,
 			'facebook' => false,
 			'twitter' => false,
 			'pinterest' => false,
@@ -40,9 +43,17 @@ class RWEgallery {
 			'page_id' => 2,
 			'title_format' => "[title] [separator] [gallery_name] [separator] ",
 			'enable_wishlist' => 'yes',
+			'wishlist_quantity' => 'yes',
 			'wishlist_prices' => 'no',
+			'view_wishlist_page' => 'no',
+			'wishlist_continue_button' => 'Continue shopping',
+			'wishlist_submit_button' => 'Submit your wishlist',
 			'wishlist_message' => 'Complete the following form to submit your wishlist.',
-			'seo_urls' => 'no'
+			'seo_urls' => 'no',
+			'show_related_items' => 'yes',
+			'related_items_label' => 'You Might Also Like',
+			'show_kit_items' => 'yes',
+			'kit_items_label' => 'Contains',
 		);
 
 		// Read stored options from options table
@@ -68,8 +79,12 @@ class RWEgallery {
 			rwe_set_data('rwelephant_id',$options['rwelephant_id']);
 			rwe_set_data('title_format',$options['title_format']);
 			rwe_set_data('enable_wishlist',$options['enable_wishlist']);
+			rwe_set_data('view_wishlist_page',$options['view_wishlist_page']);
 			rwe_set_data('wishlist_prices',$options['wishlist_prices']);
-			rwe_set_data('wishlist_prices',$options['page_id']);
+			rwe_set_data('wishlist_quantity',$options['wishlist_quantity']);
+			rwe_set_data('wishlist_submit_button',$options['wishlist_submit_button']);
+			rwe_set_data('wishlist_continue_button',$options['wishlist_continue_button']);
+			rwe_set_data('wishlist_thumbnail_size',$options['wishlist_thumbnail_size']);
 			rwe_set_data('seo_urls',$options['seo_urls']);
 
 			// Define API calls
@@ -113,6 +128,8 @@ class RWEgallery {
 
 			$category_list_template_file = (file_exists($custom_template.'category-list.php'))? $custom_template . 'category-list.php' : $common_template . 'category-list.php';
 			$item_list_template_file = (file_exists($custom_template.'item-list.php'))? $custom_template . 'item-list.php' : $common_template . 'item-list.php';
+			$kit_list_template_file = (file_exists($custom_template.'kit-list.php'))? $custom_template . 'kit-list.php' : $common_template . 'kit-list.php';
+			$related_list_template_file = (file_exists($custom_template.'related-list.php'))? $custom_template . 'related-list.php' : $common_template . 'related-list.php';
 
 
 			//   Wishlist
@@ -152,7 +169,7 @@ class RWEgallery {
 
 			// Request var names mapped to permalink names
 
-			$request_vars_list = array ('category'=>'rwecat', 'tag'=>'rwetag', 'item'=>'rweitem', 'search'=>'rwe-search', 'wishlist'=>'rwewishlist');
+			$request_vars_list = array ('category'=>'rwecat', 'tag'=>'rwetag', 'item'=>'rweitem', 'search'=>'rwe-search', 'wishlist'=>'rwewishlist', 'viewwishlist'=>'rweviewwishlist');
 			rwe_set_data('request_vars_list',$request_vars_list); // store for use in other functions
 
 			// Process the URL 
@@ -181,6 +198,8 @@ class RWEgallery {
 						$get_request['search'] = get_query_var('rwe-search');
 					elseif ($var=='rwewishlist')
 						$get_request['wishlist'] = get_query_var('rwewishlist');
+					elseif ($var=='rweviewwishlist')
+						$get_request['viewwishlist'] = get_query_var('rweviewwishlist');
 					else
 						$get_request["$key"] = intval(get_query_var("$var"));
 				}
@@ -205,6 +224,9 @@ class RWEgallery {
 			}
 			elseif ($page_request['wishlist']) {
 				$wishlist_submit = 1;
+			}
+			elseif ($page_request['viewwishlist']) {
+				$wishlist_view = 1;
 			}
 			elseif ($page_request['item']) {
 				$item_id = $page_request['item'];
@@ -315,6 +337,25 @@ class RWEgallery {
 				$phone_number =  htmlspecialchars(stripslashes($_REQUEST['phone_number']));
 				$event_date =  htmlspecialchars(stripslashes($_REQUEST['event_date']));
 
+				$extra_fields = '';
+				if (file_exists($custom_template.'wishlist-extra-fields.php')) {
+
+					$extra_fields = '&wishlist_custom_fields=';
+
+					// check for extra fields input
+
+					$default_fields = array('rwewishlist','rwesid','first_name','last_name','email_address','phone_number','event_date');
+
+					foreach ($_REQUEST as $key => $value) {
+						if (!in_array($key,$default_fields)) {
+							$value = htmlspecialchars(stripslashes($value));
+							$extra_fields .= urlencode("$key: $value\n\n");
+						}
+					}
+
+				}
+
+
 				// error checking
 
 				if ($_POST) {
@@ -368,7 +409,8 @@ class RWEgallery {
 							. '&last_name=' . urlencode($last_name)
 							. '&email_address=' . urlencode($email_address)
 							. '&phone_number=' . urlencode($phone_number)
-							. '&event_date=' . urlencode($formatted_date);
+							. '&event_date=' . urlencode($formatted_date)
+							. $extra_fields;
 
 					$wishlist_submit_result = RWEgallery::rwe_api($wishlist_submit_string);
 
@@ -404,6 +446,13 @@ class RWEgallery {
 
 					// if error or first page load
 
+
+					// get extra fields template
+
+					if (file_exists($custom_template.'wishlist-extra-fields.php')) {
+						$wishlist_extra_fields = file_get_contents($custom_template.'wishlist-extra-fields.php');
+					}
+
 					$wishlist_message = '<p>' . $options['wishlist_message'] . '</p>';
 
 					$content = <<<EOF
@@ -419,6 +468,9 @@ class RWEgallery {
 		<p class="$error_email"><label for="email_address">Email address</label><input name="email_address" type="text" value="$email_address" /></p>
 		<p class="$error_phone"><label for="phone_number">Phone number</label><input name="phone_number" type="text" value="$phone_number" /></p>
 		<p class="$error_event"><label for="event_date">Event date (mm-dd-yyyy)</label><input id="event_date" name="event_date" type="text" value="$event_date" /></p>
+
+		$wishlist_extra_fields
+
 <script type="text/javascript">
 jQuery(document).ready(function() {
     jQuery('#event_date').datepicker({
@@ -452,9 +504,28 @@ EOF;
 
 				rwe_set_data('content', $content);
 
-			}	// end of wishlist
+			}	// end of wishlist submit
 
 
+			if ($wishlist_view) {
+
+				$content = <<<EOF
+
+	<h2>Your Wishlist</h2>
+
+	<div class="view-wishlist-page">
+
+		<form id="wishlistpageform">
+		<div id="wishlist-page-contents"></div>
+		</form>
+
+	</div>
+
+EOF;
+
+				rwe_set_data('content', $content);
+
+			}
 
 			if ($location == 'main') {
 
@@ -485,6 +556,7 @@ EOF;
 				
 						$category_list_placeholders = array(
 							'[category_name]' => $category['inventory_type_name'],
+							'[category_id]' => $category['inventory_type_id'],
 							'[category_url]' => RWEgallery::rwe_link('category',$category['inventory_type_id'],htmlspecialchars_decode($category['inventory_type_name'])),
 							'[category_thumbnail]' => $category['images']['photo'],
 							'[category_thumbnail_url]' => $category['images']['photo_url']
@@ -680,6 +752,7 @@ EOF;
 					'[gallery_url]' => get_permalink($options['page_id']),
 					'[search_form]' => $search_form,
 					'[category_name]' => $category_name,
+					'[category_id]' => $category_id,
 					'[category_items]' => $items_in_category_content,
 					'[category_thumbnail_size]' => $options['category_thumbnail_size'],
 					'[error]' => $error,
@@ -732,6 +805,21 @@ EOF;
 					// process images -- main image and thumbnails
 					$item_images = RWEgallery::process_image_links( $item_detail_result['image_links'],
 								 $item['name'], $options['item_thumbnail_size'], $options['rwelephant_id'] );
+
+					// related items
+					// filter out empty values
+					$related = array_filter($item_detail_result['related_items']);
+					if (!empty($related) && $options['show_related_items']=='yes') {
+						$related_items = RWEgallery::process_related_items($related, $options['related_thumbnail_size'], $options['related_items_label'], $related_list_template_file, $options['rwelephant_id']);
+					}
+
+					// kit items
+					// filter out empty values
+					$kit = array_filter($item_detail_result['inventory_kit_line_items']);
+					if (!empty($kit) && $options['show_kit_items']=='yes') {
+						$kit_items = RWEgallery::process_kit_items($kit, $options['kit_thumbnail_size'], $options['kit_items_label'], $kit_list_template_file, $options['rwelephant_id']);
+					}
+
 
 					// add to wishlist button
 					if (rwe_get_data('enable_wishlist')=='yes') {
@@ -800,8 +888,21 @@ EOF;
 					$item_url = RWEgallery::rwe_link('item',$item_id, 'not found');
 				}
 
-				$item_detail_template_file = (file_exists($custom_template.'item-detail.php'))? $custom_template . 'item-detail.php' : $standard_template . 'item-detail.php';
+				if ($item['rental_price']) {
+					$price_template_file = (file_exists($custom_template.'price.php'))? $custom_template . 'price.php' : $common_template . 'price.php';
+					$price_template = file_get_contents( $price_template_file );
 
+					$price_placeholders = array(
+						'[price]' => $item['rental_price']
+					);
+
+					$formatted_price = RWEgallery::parse_template( $price_template, $price_placeholders );
+				}
+				else {
+					$formatted_price = '';
+				}
+
+				$item_detail_template_file = (file_exists($custom_template.'item-detail.php'))? $custom_template . 'item-detail.php' : $standard_template . 'item-detail.php';
 				$item_detail_template = file_get_contents( $item_detail_template_file );
 
 				$item_detail_placeholders = array(
@@ -809,9 +910,11 @@ EOF;
 					'[gallery_url]' => get_permalink($options['page_id']),
 					'[search_form]' => $search_form,
 					'[item_name]' => $item['name'],
+					'[item_id]' => $item_id,
 					'[item_description]' => $item['description'],
 					'[item_quantity]' => $item['quantity'],
 					'[item_category_name]' => $item['inventory_type_name'],
+					'[item_category_id]' => $item['inventory_type_id'],
 					'[item_category_url]' => RWEgallery::rwe_link('category',$item['inventory_type_id'],htmlspecialchars_decode($item['inventory_type_name'])),
 					'[item_photo]' => $item_images['main_photo'],
 					'[item_photo_url]' => $item_images['main_photo_url'],
@@ -821,6 +924,9 @@ EOF;
 					'[item_tags]' => $item['tags'],
 					'[item_dimensions]' => $item['dimensions'],
 					'[item_price]' => $item['rental_price'],
+					'[formatted_price]' => $formatted_price,
+					'[related_items]' => $related_items,
+					'[kit_items]' => $kit_items,
 					'[error]' => $error,
 					'[page_url]' => $item_url,
 					'[social_links]' => $social_links,
@@ -926,11 +1032,19 @@ EOF;
 	function rwe_wishlist_head_js() {
 
 		$getsid = admin_url( 'admin-ajax.php' );
-		$rweid = rwe_get_data('rwelephant_id');
+
+		$rwe_gallery_options = get_option('rwe_gallery_options');
+		$rweid = $rwe_gallery_options['rwelephant_id'];
+		$galleryurl = get_permalink( $rwe_gallery_options['page_id'] );
+
+		// $rweid = rwe_get_data('rwelephant_id');
 
 		echo <<<EOF
 <script type="text/javascript">
+var rweID = '$rweid';
+var imageURL = 'http://$rweid.rwelephant.com/';
 var rweURL = 'http://$rweid.rwelephant.com/perl/wishlist?callback=?';
+var galleryURL = '$galleryurl';
 jQuery(document).ready(function( $ ) {
 	var rwe_sid = getCookie('rwe_sid');
 	if (rwe_sid=="") {
@@ -965,9 +1079,29 @@ jQuery(document).ready(function( $ ) {
 });
 EOF;
 		if (rwe_get_data("wishlist_prices") == 'yes') {
-	     		echo 'var showprice = true;';
+	     		echo 'var showprice = false;';
 		}
 		else echo 'var showprice = false;';
+		if (rwe_get_data("wishlist_quantity") == 'yes') {
+	     		echo 'var showquantity = true;';
+		}
+		else echo 'var showquantity = false;';
+		if (rwe_get_data("view_wishlist_page") == 'yes') {
+	     		echo 'var viewwishlistpage = true;';
+		}
+		else echo 'var viewwishlistpage = false;';
+		if (rwe_get_data('seo_urls') == 'yes')
+			echo 'var seoURLs = true;';
+		else
+			echo 'var seoURLs = false;';
+
+		echo 'var permalinks = ';
+		echo (get_option('permalink_structure'))? 'true;':'false;'; // if permalinks are enabled
+
+		echo 'var wishlistthumbnailsize = "' . rwe_get_data("wishlist_thumbnail_size") . '";';
+		echo 'var wishlistcontinuebuttontext = "' . rwe_get_data("wishlist_continue_button") . '";';
+		echo 'var wishlistsubmitbuttontext = "' . rwe_get_data("wishlist_submit_button") . '";';
+
 
 echo <<<EOF
 function setCookie(cname,cvalue,exdays)
@@ -1128,6 +1262,58 @@ EOF;
 		return $item_images;
 	}
 
+	function process_related_items($related, $thumbnail_size, $label, $template_file, $rwe_id) {
+		$list_template = file_get_contents( $template_file );
+		$related_items = "<h3>$label</h3>" . '<ul class="related-items">';
+		foreach ($related as $item) {
+
+			$photos = RWEgallery::process_item_in_category_image_links ($item['image_links'], $item['name'], $thumbnail_size, $rwe_id);
+
+			$placeholders = array(
+				'[item_name]' => $item['name'],
+				'[item_id]' => $item['inventory_item_id'],
+				'[item_category_id]' => $item['inventory_type_id'],
+				'[item_category_name]' => $item['inventory_type_name'],
+				'[item_price]' => $item['rental_price'],
+				'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id'],htmlspecialchars_decode($item['name'])),
+				'[item_photo]' => $photos['photo'],
+				'[item_photo_url]' => $photos['photo_url']
+			);
+
+			$related_items .= RWEgallery::parse_template( $list_template, $placeholders );
+
+		}
+		$related_items .= '</ul>';
+		return $related_items;
+	}
+
+	function process_kit_items($kit, $thumbnail_size, $label, $template_file, $rwe_id) {
+		$list_template = file_get_contents( $template_file );
+		$kit_items = "<h3>$label</h3>" . '<ul class="kit-items">';
+		foreach ($kit as $item) {
+
+			$photos = RWEgallery::process_item_in_category_image_links ($item['image_links'], $item['name'], $thumbnail_size, $rwe_id);
+
+			$placeholders = array(
+				'[item_quantity]' => $item['quantity'],
+				'[item_name]' => $item['name'],
+				'[item_id]' => $item['inventory_item_id'],
+				'[item_category_id]' => $item['inventory_type_id'],
+				'[item_category_name]' => $item['inventory_type_name'],
+				'[item_price]' => $item['rental_price'],
+				'[item_url]' => RWEgallery::rwe_link('item',$item['inventory_item_id'],htmlspecialchars_decode($item['name'])),
+				'[item_photo]' => $photos['photo'],
+				'[item_photo_url]' => $photos['photo_url']
+			);
+
+			$kit_items .= RWEgallery::parse_template( $list_template, $placeholders );
+
+		}
+		$kit_items .= '</ul>';
+		return $kit_items;
+	}
+
+
 	function format_item_dimensions( $length, $width, $height ) {
 		if ( $length | $width | $height ) {
 			$dimensions = array();
@@ -1151,7 +1337,7 @@ EOF;
 		else return;
 	}
 
-	function change_page_title($title, $sep, $seplocation) { 
+	function change_page_title($title, $sep = "|", $seplocation = 'right') { 
 
 		$custom_title = rwe_get_data('page_title');
 		$gallery_name = rwe_get_data('gallery_name');
@@ -1289,11 +1475,64 @@ function rwe_admin_options() {
 		    'options' => array(100,200,300) ),
 		array(
 		    'name' => 'Use item and category names in URLs?',
-		    'desc' => '',
+		    'desc' => '&quot;SEO-friendly&quot; URLs',
 		    'id'   => 'seo_urls',
 		    'type' => 'select',
 		    'options' => array('yes','no'),
 		    'default' => 'no' ),
+		array(
+		    'name' => 'Kits',
+		    'desc' => '',
+		    'id'   => 'kits',
+		    'type' => 'section'),
+		array(
+		    'name' => 'Expanded display of kits?',
+		    'desc' => 'Show the individual items in a kit on the detail page',
+		    'id'   => 'show_kit_items',
+		    'type' => 'select',
+		    'options' => array('yes','no'),
+		    'default' => 'yes' ),
+		array(
+		    'name' => 'Kit item thumbnail size',
+		    'desc' => 'pixels',
+		    'id'   => 'kit_thumbnail_size',
+		    'type' => 'select',
+		    'options' => array(100,200) ),
+		array(
+		    'name' => 'Title for kit items',
+		    'desc' => '',
+		    'id'   => 'kit_items_label',
+		    'type' => 'text',
+		    'std'  => 'Contains'),
+		array(
+		    'name' => 'Related Items',
+		    'desc' => '',
+		    'id'   => 'related-items',
+		    'type' => 'section'),
+		array(
+		    'name' => 'Show related items?',
+		    'desc' => '',
+		    'id'   => 'show_related_items',
+		    'type' => 'select',
+		    'options' => array('yes','no'),
+		    'default' => 'yes' ),
+		array(
+		    'name' => 'Related item thumbnail size',
+		    'desc' => 'pixels',
+		    'id'   => 'related_thumbnail_size',
+		    'type' => 'select',
+		    'options' => array(100,200) ),
+		array(
+		    'name' => 'Title for related items',
+		    'desc' => '',
+		    'id'   => 'related_items_label',
+		    'type' => 'text',
+		    'std'  => 'You Might Also Like'),
+		array(
+		    'name' => 'Wishlist',
+		    'desc' => 'Allow visitors to create and submit a wishlist of items from your gallery.',
+		    'id'   => 'wishlist-options',
+		    'type' => 'section'),
 		array(
 		    'name' => 'Enable wishlist?',
 		    'desc' => '',
@@ -1302,12 +1541,37 @@ function rwe_admin_options() {
 		    'options' => array('yes','no'),
 		    'default' => 'yes' ),
 		array(
-		    'name' => 'Show prices in wishlist?',
+		    'name' => 'View wishlist on a separate page?',
 		    'desc' => '',
-		    'id'   => 'wishlist_prices',
+		    'id'   => 'view_wishlist_page',
 		    'type' => 'select',
 		    'options' => array('yes','no'),
 		    'default' => 'no' ),
+		array(
+		    'name' => 'Wishlist thumbnail size',
+		    'desc' => 'pixels. Shown on separate wishlist page only',
+		    'id'   => 'wishlist_thumbnail_size',
+		    'type' => 'select',
+		    'options' => array(100,200) ),
+		array(
+		    'name' => 'Show quantity on wishlist?',
+		    'desc' => '',
+		    'id'   => 'wishlist_quantity',
+		    'type' => 'select',
+		    'options' => array('yes','no'),
+		    'default' => 'yes' ),
+		array(
+		    'name' => 'Continue shopping button',
+		    'desc' => 'shown on the wishlist page',
+		    'id'   => 'wishlist_continue_button',
+		    'type' => 'text',
+		    'std'  => 'Continue shopping'),
+		array(
+		    'name' => 'Wishlist submit button',
+		    'desc' => 'shown on the wishlist page',
+		    'id'   => 'wishlist_submit_button',
+		    'type' => 'text',
+		    'std'  => 'Submit your wishlist'),
 		array(
 		    'name' => 'Wishlist Message',
 		    'desc' => 'Message to show on wishlist submit page',
@@ -1415,7 +1679,6 @@ function rwe_admin_options() {
 	echo '</form>';
 	echo '</div>';
 }
-
 if (!get_option('rwe_gallery_options')) {
 	add_action( 'admin_notices', 'rwe_admin_notices' );
 }
@@ -1423,6 +1686,7 @@ if (!get_option('rwe_gallery_options')) {
 function rwe_load_function() {
 	remove_action( 'admin_notices', 'rwe_admin_notices' );
 }
+
 function rwe_admin_notices() {
 	echo "<div id='notice' class='updated fade'><p>R.W. Elephant Inventory Gallery is not configured yet. Please edit the settings now.</p></div>\n";
 }
@@ -1437,6 +1701,101 @@ function jsonp_decode($jsonp, $assoc = true) { // PHP 5.3 adds depth as third pa
 	}
 	return json_decode(trim($jsonp,'();'), $assoc);
 }
+
+class RWE_Widget extends WP_Widget {
+
+	// Set up the RW Elephant 
+
+	public function __construct() {
+		parent::__construct(
+			'rwe_widget', // Base ID
+			__( 'RW Elephant Wishlist Button', 'text_domain' ), // Name
+			array( 'description' => __( 'A button to view RW Elephant wishlist', 'text_domain' ), ) // Args
+		);
+	}
+
+	/**
+	 * Outputs the content of the widget
+	 *
+	 * @param array $args
+	 * @param array $instance
+	 */
+	public function widget( $args, $instance ) {
+
+		// load RW Elephant plugin options
+
+		$rwe_gallery_options = get_option('rwe_gallery_options');
+
+		if ($rwe_gallery_options['enable_wishlist']=='yes'){ 
+
+			echo $args['before_widget'];
+			if ( ! empty( $instance['title'] ) ) {
+				echo $args['before_title'] . apply_filters( 'widget_title', $instance['title'] ). $args['after_title'];
+			}
+
+			$handle = 'rwe_wishlist_script';
+			$list = 'enqueued';
+			if (wp_script_is( $handle, $list )) {
+				// nothing
+			} else {
+				// wishlist js not loaded
+	
+				// Add hook to define RWE data javascript in footer
+				add_action('wp_footer', array('RWEgallery', 'rwe_wishlist_head_js'));
+	
+				// Register and load script for counter
+				wp_register_script( 'rwe_wishlist_counter', plugin_dir_url(__FILE__).'templates/common/wishlist-counter.js');
+				wp_enqueue_script( 'rwe_wishlist_counter' );
+	
+			}
+
+			// get permalink for gallery page
+		
+			if ( $rwe_gallery_options['page_id'] ) {
+				$rwe_gallery_page = get_permalink( $rwe_gallery_options['page_id'] );
+			}
+	
+			$url_connector = (get_option('permalink_structure'))? '?':'&'; // if permalinks are enabled use '?' else '&'
+	
+			echo ( '<a href="'. $rwe_gallery_page . $url_connector .'rweviewwishlist=1" class="view-wishlist">Wishlist</a>');
+			echo $args['after_widget'];
+
+		}
+
+	}
+
+	/**
+	 * Outputs the options form on admin
+	 *
+	 * @param array $instance The widget options
+	 */
+	public function form( $instance ) {
+		$title = ! empty( $instance['title'] ) ? $instance['title'] : '';
+		?>
+		<p>
+		<label for="<?php echo $this->get_field_id( 'title' ); ?>"><?php _e( 'Title:' ); ?></label> 
+		<input class="widefat" id="<?php echo $this->get_field_id( 'title' ); ?>" name="<?php echo $this->get_field_name( 'title' ); ?>" type="text" value="<?php echo esc_attr( $title ); ?>">
+		</p>
+		<?php 
+	}
+
+	/**
+	 * Processing widget options on save
+	 *
+	 * @param array $new_instance The new options
+	 * @param array $old_instance The previous options
+	 */
+	public function update( $new_instance, $old_instance ) {
+		$instance = array();
+		$instance['title'] = ( ! empty( $new_instance['title'] ) ) ? strip_tags( $new_instance['title'] ) : '';
+
+		return $instance;
+	}
+}
+
+add_action('widgets_init',
+     create_function('', 'return register_widget("RWE_Widget");')
+);
 
 // get the permalink for the gallery
 function get_rwe_gallery_permalink() {
@@ -1473,7 +1832,7 @@ function rwe_gallery_rewrite_rules( $rules ) {
 
 // Add variables to use in query
 function rwe_gallery_query_vars( $vars ) {
-	array_push($vars, 'rwegallery', 'rwecat', 'rwetag', 'rweitem', 'rwewishlist', 'rwe-search');
+	array_push($vars, 'rwegallery', 'rwecat', 'rwetag', 'rweitem', 'rwewishlist', 'rweviewwishlist', 'rwe-search');
 	return $vars;
 }
 
