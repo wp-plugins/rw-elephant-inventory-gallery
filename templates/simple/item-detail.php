@@ -37,6 +37,9 @@
 			<p>
 				<span class="rwe-desc-label">Dimensions:</span> [item_dimensions]
 			</p>
+
+			[formatted_price]
+
 		</div>
 
 		<ul class="rwe-item-tags">
@@ -46,6 +49,10 @@
 		[add_to_wishlist]
 
 		[wishlist_notice]
+
+		[related_items]
+
+		[kit_items]
 
 	</div>
 
