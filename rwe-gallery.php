@@ -808,16 +808,20 @@ EOF;
 
 					// related items
 					// filter out empty values
-					$related = array_filter($item_detail_result['related_items']);
-					if (!empty($related) && $options['show_related_items']=='yes') {
-						$related_items = RWEgallery::process_related_items($related, $options['related_thumbnail_size'], $options['related_items_label'], $related_list_template_file, $options['rwelephant_id']);
+					if (is_array($item_detail_result['related_items'])) {
+						$related = array_filter($item_detail_result['related_items']);
+						if (!empty($related) && $options['show_related_items']=='yes') {
+							$related_items = RWEgallery::process_related_items($related, $options['related_thumbnail_size'], $options['related_items_label'], $related_list_template_file, $options['rwelephant_id']);
+						}
 					}
 
 					// kit items
 					// filter out empty values
-					$kit = array_filter($item_detail_result['inventory_kit_line_items']);
-					if (!empty($kit) && $options['show_kit_items']=='yes') {
-						$kit_items = RWEgallery::process_kit_items($kit, $options['kit_thumbnail_size'], $options['kit_items_label'], $kit_list_template_file, $options['rwelephant_id']);
+					if (is_array($item_detail_result['inventory_kit_line_items'])) {
+						$kit = array_filter($item_detail_result['inventory_kit_line_items']);
+						if (!empty($kit) && $options['show_kit_items']=='yes') {
+							$kit_items = RWEgallery::process_kit_items($kit, $options['kit_thumbnail_size'], $options['kit_items_label'], $kit_list_template_file, $options['rwelephant_id']);
+						}
 					}
 
 
